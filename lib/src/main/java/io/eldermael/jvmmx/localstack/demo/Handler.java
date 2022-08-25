@@ -6,49 +6,40 @@ package io.eldermael.jvmmx.localstack.demo;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.amazonaws.services.lambda.runtime.events.SQSEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPResponse;
+import com.amazonaws.services.lambda.runtime.events.SNSEvent;
 import lombok.extern.slf4j.Slf4j;
-import software.amazon.awssdk.auth.credentials.AwsCredentials;
-import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.model.SendMessageRequest;
-
-import java.net.URI;
+import software.amazon.awssdk.services.sqs.model.SendMessageResponse;
 
 @Slf4j
-public class Handler implements RequestHandler<SQSEvent, String> {
+public class Handler implements RequestHandler<SNSEvent, APIGatewayV2HTTPResponse> {
 
   private final String queueUrl;
   private final SqsClient sqsClient;
 
-  public Handler(String queueUrl) {
+  public Handler() {
+    this.queueUrl = System.getenv("QUEUE_URL");
+    this.sqsClient = SqsClient.builder().build();
+  }
+
+  public Handler(String queueUrl, SqsClient sqsClient) {
     this.queueUrl = queueUrl;
-
-    this.sqsClient = SqsClient.builder()
-        .endpointOverride(URI.create("http://localhost:4566"))
-        .region(Region.US_EAST_1)
-        .credentialsProvider(StaticCredentialsProvider.create(new AwsCredentials() {
-          @Override
-          public String accessKeyId() {
-            return "FAKE";
-          }
-
-          @Override
-          public String secretAccessKey() {
-            return "FAKE";
-          }
-        }))
-        .build();
+    this.sqsClient = sqsClient;
   }
 
   @Override
-  public String handleRequest(SQSEvent input, Context context) {
-    log.info("Running lambda request");
-    this.sqsClient.sendMessage(SendMessageRequest.builder()
+  public APIGatewayV2HTTPResponse handleRequest(SNSEvent input, Context context) {
+    log.info("Running lambda request: {}", input);
+    log.info("Function name: {}", context.getFunctionName());
+    SendMessageResponse response = this.sqsClient.sendMessage(SendMessageRequest.builder()
         .queueUrl(this.queueUrl)
         .messageBody("test")
         .build());
-    return null;
+
+    return APIGatewayV2HTTPResponse.builder()
+        .withStatusCode(200)
+        .build();
   }
 }
