@@ -18,6 +18,7 @@ dependencies {
     api 'com.amazonaws:aws-lambda-java-events-sdk-transformer:3.1.0'
     api 'software.amazon.awssdk:sqs:2.17.243'
     api 'software.amazon.awssdk:sns:2.17.256'
+    api 'software.amazon.awssdk:s3:2.17.261'
 
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.24'
     testCompileOnly 'org.projectlombok:lombok:1.18.24'
