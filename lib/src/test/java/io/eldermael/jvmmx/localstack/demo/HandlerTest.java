@@ -39,7 +39,7 @@ public class HandlerTest {
   private S3EventNotification.S3EventNotificationRecord s3EventNotificationRecord;
 
   @Test
-  public void testHandler() {
+  public void testHandlerSendsMessageToSNSQueue() {
     // given
     given(this.context.getFunctionName()).willReturn("api.Handler");
     var clientSQSV2 = TestUtils.getClientSQSV2();
@@ -71,7 +71,7 @@ public class HandlerTest {
   }
 
   @Test
-  public void testHandlerSubscription() {
+  public void testS3BucketNotificationLoadsContentsFromS3() {
     // given
     String bucketName = "uploads";
     String fileName = "filename.txt";
